@@ -1,0 +1,9 @@
+﻿  Cell.cpp
+C:\Works\C++_Works\Files\CycleSearcher\CycleSearcher\CycleSearcher.h(26,19): warning C4677: list: сигнатура члена, не являющегося частным, содержит частный тип сборки "LinkedList"
+C:\Works\C++_Works\Files\CycleSearcher\CycleSearcher\LinkedList.h(7,11): message : см. объявление "LinkedList"
+  CycleSearcher.cpp
+C:\Works\C++_Works\Files\CycleSearcher\CycleSearcher\CycleSearcher.h(26,19): warning C4677: list: сигнатура члена, не являющегося частным, содержит частный тип сборки "LinkedList"
+C:\Works\C++_Works\Files\CycleSearcher\CycleSearcher\LinkedList.h(7,11): message : см. объявление "LinkedList"
+  Создание кода...
+  Cell.obj : обнаружен модуль MSIL; для MSIL последовательная компоновка отключена; выполняется полная компоновка
+  CycleSearcher.vcxproj -> C:\Works\C++_Works\Files\CycleSearcher\x64\Debug\CycleSearcher.exe
