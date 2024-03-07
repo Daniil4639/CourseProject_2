@@ -3,14 +3,16 @@
 
 Cell::Cell() {
 	this->id = -1;
-	nextPoint = System::Drawing::Point(-200, -200);
+	hasNext = false;
+	hasPrev = false;
+	intoCycle = false;
 }
 
 Cell::Cell(long long id) {
 	this->id = id;
 	hasNext = false;
 	hasPrev = false;
-	nextPoint = System::Drawing::Point(-200, -200);
+	intoCycle = false;
 }
 
 void Cell::setLabel(System::Windows::Forms::Label^ label) {

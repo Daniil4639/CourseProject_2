@@ -9,7 +9,8 @@ protected:
 public:
 	bool hasNext;
 	bool hasPrev;
-	System::Drawing::Point nextPoint;
+	bool intoCycle;
+	System::Windows::Forms::Label^ nextLabel;
 	System::Windows::Forms::Label^ label;
 
 	Cell();

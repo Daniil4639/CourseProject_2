@@ -222,6 +222,7 @@ namespace CycleSearcher {
 		System::Windows::Forms::Label^ label = gcnew System::Windows::Forms::Label();
 		label->AutoSize = false;
 		label->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+		label->ForeColor = Color::Black;
 		label->Size = System::Drawing::Size(40, 40);
 		label->Location = System::Drawing::Point(100, 100);
 		label->Text = System::Convert::ToString(list->getSize());
@@ -256,10 +257,16 @@ private: System::Void clearButton_Click(System::Object^ sender, System::EventArg
 
 	list->clear();
 
-	reDraw();
+	reDraw(true);
 }
 
 private: System::Void checkButton_Click(System::Object^ sender, System::EventArgs^ e) {
+	if (list->getSize() == 0) {
+		answerLabel->Text = "-";
+		answerLabel->ForeColor = Color::Black;
+		return;
+	}
+
 	int num = stoi(msclr::interop::marshal_as<std::string>(activelabel->Text));
 
 	if (!hasActiveLabel) {
@@ -287,7 +294,7 @@ private: System::Void customLabel_MouseDown(System::Object^ sender, System::Wind
 		if (makeConnection) {
 			addLine(label);
 
-			reDraw();
+			reDraw(true);
 		}
 
 		activelabel = label;
@@ -317,14 +324,7 @@ private: System::Void customLabel_MouseMove(System::Object^ sender, System::Wind
 		label->Top = label->Top + (e->Y - mousePoint.Y);
 		label->Left = label->Left + (e->X - mousePoint.X);
 
-		if (cell->hasPrev) {
-
-			Cell^ prevCell = cell->getPrev();
-			prevCell->nextPoint.X += (e->X - mousePoint.X);
-			prevCell->nextPoint.Y += (e->Y - mousePoint.Y);
-		}
-
-		reDraw();
+		reDraw(true);
 	}
 }
 private: System::Void CycleSearcher_Load(System::Object^ sender, System::EventArgs^ e) {
@@ -340,12 +340,14 @@ private: System::Void CycleSearcher_KeyDown(System::Object^ sender, System::Wind
 
 		Cell^ cell = list->getCell(num);
 
-		if (cell->hasPrev) {
-			Cell^ prevCell = cell->getPrev();
+		for (int i = 0; i < list->getSize(); i++) {
+			Cell^ currentCell = list->getCell(i);
 
-			prevCell->nextPoint = Point(-200, -200);
-			prevCell->hasNext = false;
+			if (currentCell->hasNext && currentCell->getNext()->Equals(cell)) {
+				currentCell->hasNext = false;
+			}
 		}
+
 		if (cell->hasNext) {
 			Cell^ nextCell = cell->getNext();
 
@@ -358,7 +360,7 @@ private: System::Void CycleSearcher_KeyDown(System::Object^ sender, System::Wind
 
 		list->renumerate();
 
-		reDraw();
+		reDraw(true);
 
 		hasActiveLabel = false;
 	}
@@ -392,8 +394,7 @@ private: void addLine(Label^ endLabel) {
 	int numActive = stoi(msclr::interop::marshal_as<std::string>(activelabel->Text));
 	int numNext = stoi(msclr::interop::marshal_as<std::string>(endLabel->Text));
 
-	list->getCell(numActive)->nextPoint = Point(
-		endLabel->Location.X, endLabel->Location.Y + 20);
+	list->getCell(numActive)->nextLabel = endLabel;
 
 	list->getCell(numActive)->setNext(list->getCell(numNext));
 	list->getCell(numActive)->hasNext = true;
@@ -402,18 +403,41 @@ private: void addLine(Label^ endLabel) {
 	list->getCell(numNext)->hasPrev = true;
 }
 
-private: void reDraw() {
+private: void reDraw(bool reDrawCycle) {
+	if (reDrawCycle) {
+		clearMarks();
+	}
+
 	g->Clear(System::Drawing::SystemColors::Control);
 	Pen^ pen = gcnew Pen(Color::Black);
+
+	Pen^ specialPen = gcnew Pen(Color::Red);
 
 	for (int i = 0; i < list->getSize(); i++) {
 		Cell^ cell = list->getCell(i);
 
-		if (cell->nextPoint.X != -200) {
-			g->DrawLine(pen, Point(
-				cell->label->Location.X + 40, cell->label->Location.Y + 20),
-				cell->nextPoint);
+		if (cell->hasNext) {
+			if (cell->intoCycle) {
+				g->DrawLine(specialPen,
+					Point(cell->label->Location.X + 20, cell->label->Location.Y + 20),
+					Point(cell->nextLabel->Location.X + 20, cell->nextLabel->Location.Y + 20));
+			}
+			else {
+				g->DrawLine(pen,
+					Point(cell->label->Location.X + 20, cell->label->Location.Y + 20),
+					Point(cell->nextLabel->Location.X + 20, cell->nextLabel->Location.Y + 20));
+			}
 		}
+	}
+}
+
+private: void clearMarks() {
+	for (int i = 0; i < list->getSize(); i++) {
+		Cell^ cell = list->getCell(i);
+
+		cell->intoCycle = false;
+		cell->label->BackColor = SystemColors::ControlLight;
+		cell->label->ForeColor = Color::Black;
 	}
 }
 
@@ -432,11 +456,27 @@ private: bool findCycle(Cell^ slow, Cell^ fast) {
 		slow = slow->getNext();
 
 		if (slow->getId() == fast->getId()) {
+
+			markCycle(slow, fast);
+
 			return true;
 		}
 	}
 
 	return false;
+}
+
+private: void markCycle(Cell^ slow, Cell^ fast) {
+	do {
+		fast = fast->getNext();
+
+		fast->label->BackColor = Color::Red;
+		fast->label->ForeColor = Color::White;
+
+		fast->intoCycle = true;
+	} while (slow->getId() != fast->getId());
+
+	reDraw(false);
 }
 };
 }
